@@ -105,7 +105,7 @@ class SimpleAgent:
         Args:
             max_steps (int): Maximum number of steps in one epoch
         """
-        for step in tqdm(range(max_steps)):
+        for step in range(max_steps):
             action = self.choose_action()
             state, reward, next_state, done = self.do_step(action=action)
             self.update_memory(state=state, action=action, reward=reward, next_state=next_state, done=done)

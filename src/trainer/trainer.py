@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 
 class Trainer:
@@ -32,11 +33,11 @@ class Trainer:
             eps_decay: decay factor for epsilon value after each epoch
         """
         eps = eps_start
-        for epoch in range(n_epochs):
+        for epoch in tqdm(range(n_epochs)):
             self.agent.eps = eps
             score = self.agent.play()
             self.scores.append(score)
-            print(f"Epoch {epoch} - Score: {np.mean(self.scores[-100:])} - Eps: {eps}")
+            #print(f"Epoch {epoch} - Score: {np.mean(self.scores[-100:])} - Eps: {eps}")
             self.agent.reset()
             eps = max(eps_end, eps_decay*eps)
 
