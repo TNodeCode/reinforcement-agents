@@ -38,8 +38,7 @@ class IntelligentAgent(SimpleAgent):
         # Use net_local to compute scores for each action based on state and get best action
         with torch.no_grad():
             # compute scores for each action
-            state_tensor = torch.from_numpy(self.state)
-            state_tensor = state_tensor.float()
+            state_tensor = torch.from_numpy(self.state).float()
             state_tensor = state_tensor.unsqueeze(0)
             state_tensor = state_tensor.to(self.device)
             action_scores = self.net_local(state_tensor)

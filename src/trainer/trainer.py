@@ -36,8 +36,8 @@ class Trainer:
         for epoch in tqdm(range(n_epochs)):
             self.agent.eps = eps
             score = self.agent.play()
+            print("Score", score)
             self.scores.append(score)
-            #print(f"Epoch {epoch} - Score: {np.mean(self.scores[-100:])} - Eps: {eps}")
             self.agent.reset()
             eps = max(eps_end, eps_decay*eps)
 
