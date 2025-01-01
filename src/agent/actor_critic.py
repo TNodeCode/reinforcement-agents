@@ -9,7 +9,7 @@ from src.network.critic import Critic
 
 
 class ActorCriticAgent(SimpleAgent):
-    def __init__(self, env, eps=1.0, lr_actor=5e-4, lr_critic=5e-4, memory_size=int(1e5), batch_size=256, device="cpu"):
+    def __init__(self, env, eps=1.0, lr_actor=1e-4, lr_critic=3e-4, memory_size=int(1e5), batch_size=256, device="cpu"):
         """
         Constructor.
         """
@@ -17,7 +17,7 @@ class ActorCriticAgent(SimpleAgent):
         self.eps = eps
         self.gamma = torch.tensor(0.99).to(device)
         self.tau = 1e-3
-        self.update_every = 5
+        self.update_every = 2
         self.device = device
 
         # Build a local and a target agent
@@ -54,16 +54,14 @@ class ActorCriticAgent(SimpleAgent):
         # get a continuous representation of the optimal action
         self.actor_local.eval()
         with torch.no_grad():
-            state_tensor = torch.from_numpy(self.state).float()
-            state_tensor = state_tensor.unsqueeze(0)
-            state_tensor = state_tensor.to(self.device)
+            state_tensor = torch.from_numpy(self.state).float().unsqueeze(0).to(self.device)
             action = self.actor_local(state_tensor)
+            # limit range to interval [min, max]
+            action = torch.clamp(action, min=-1, max=1)
+            # add random noise to action tensor, this will help the model to stabilize predictions
+            action += 0.01 * torch.randn(*action.shape)
         self.actor_local.train()
-        # limit range to interval [min, max]
-        action = torch.clamp(action, min=-1, max=1)
-        # add random noise to action tensor, this will help the model to stabilize predictions
-        action += torch.randn(*action.shape)
-        return action.detach().cpu().numpy()
+        return action.cpu().numpy()
 
     def learn(self):
         """
@@ -71,7 +69,7 @@ class ActorCriticAgent(SimpleAgent):
         """
         if len(self.memory) % self.update_every == 0:
             # get a random batch from memory
-            states, actions, rewards, next_states, dones = self.memory.sample(device=self.device, batch_size=256)
+            states, actions, rewards, next_states, dones = self.memory.sample(device=self.device, batch_size=self.batch_size)
             # actor computes action vector based on state
             predicted_actions = self.actor_local(states)
             target_actions = self.actor_target(next_states)
