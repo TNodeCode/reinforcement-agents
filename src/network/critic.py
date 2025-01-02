@@ -7,6 +7,13 @@ class Critic(nn.Module):
     """Critic network that computes a score for a state-action tuple.
     """
     def __init__(self, dim_state: int, dim_action: int, hidden_dims: List[int] = [64]):
+        """Constructor.
+
+        Args:
+            dim_state (int): dimension of state vectors
+            dim_action (int): dimension of action vectors
+            hidden_dims (List[int], optional): Dimenions of hidden layers. Defaults to [].
+        """
         super(Critic, self).__init__()
         dim_layers = [dim_state + dim_action] + hidden_dims + [1]
         self.net = nn.Sequential(*[

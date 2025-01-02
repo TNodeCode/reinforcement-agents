@@ -109,9 +109,9 @@ class SimpleAgent:
             action = self.choose_action()
             state, reward, next_state, done = self.do_step(action=action)
             self.update_memory(state=state, action=action, reward=reward, next_state=next_state, done=done)
+            self.learn()
             if done:
                 break
-            self.learn()
         return self.score
     
     def save(self):
