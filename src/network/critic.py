@@ -17,13 +17,14 @@ class Critic(nn.Module):
             for dim_in, dim_out in zip(dim_layers[:-1], dim_layers[1:])
         ])
 
-    def forward(self, x):
+    def forward(self, states, actions):
         """Compute a score for a state-action tuple.
 
         Args:
-            x (torch.tensor): State
+            states (torch.tensor): State tensor
+            actions (torch.tensor); Action tensor
 
         Returns:
-            torch.tensor: Action
+            torch.tensor: Target value
         """
-        return self.net(x)
+        return self.net(torch.cat((states, actions), dim=1))

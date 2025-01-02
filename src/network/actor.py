@@ -24,13 +24,13 @@ class Actor(nn.Module):
             for dim_in, dim_out in zip(dim_layers[:-1], dim_layers[1:])
         ])
 
-    def forward(self, x):
+    def forward(self, states):
         """Compute action for state input.
 
         Args:
-            x (torch.tensor): State
+            states (torch.tensor): State tensor
 
         Returns:
             torch.tensor: Action
         """
-        return self.net(x)
+        return self.net(states)
