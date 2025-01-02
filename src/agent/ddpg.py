@@ -18,6 +18,7 @@ class DDPGAgent(SimpleAgent):
             lr_critic=1e-3,
             hidden_dims_actor=[64,64],
             hidden_dims_critic=[64,64],
+            tau=1e-2,
             memory_size=int(1e6),
             max_steps=1_000,
             batch_size=64,
@@ -29,7 +30,7 @@ class DDPGAgent(SimpleAgent):
         super().__init__(env, eps=eps, memory_size=memory_size, batch_size=batch_size, max_steps=max_steps, action_space_discrete=False, device=device)
         self.eps = eps
         self.gamma = torch.tensor(0.99).to(device)
-        self.tau = 0.005
+        self.tau = tau
         self.update_every = 1
         self.device = device
 
@@ -80,7 +81,7 @@ class DDPGAgent(SimpleAgent):
             # limit range to interval [min, max]
             action = torch.clamp(action, min=-1, max=1)
             # add random noise to action tensor, this will help the model to stabilize predictions
-            action += 0.001 * torch.randn(*action.shape)
+            #action += 0.005 * torch.randn(*action.shape)
         self.actor_local.train()
         return action.cpu().numpy()
 
