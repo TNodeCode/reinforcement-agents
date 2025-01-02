@@ -10,39 +10,52 @@ from src.network.utils import NetworkUtils
 
 
 class DDPGAgent(SimpleAgent):
-    def __init__(self, env, eps=1.0, lr_actor=1e-4, lr_critic=1e-3, memory_size=int(1e6), batch_size=64, device="cpu"):
+    def __init__(
+            self,
+            env,
+            eps=1.0,
+            lr_actor=1e-4,
+            lr_critic=1e-3,
+            hidden_dims_actor=[64,64],
+            hidden_dims_critic=[64,64],
+            tau=1e-2,
+            memory_size=int(1e6),
+            max_steps=1_000,
+            batch_size=64,
+            device="cpu"
+    ):
         """
         Constructor.
         """
-        super().__init__(env, eps=eps, memory_size=memory_size, batch_size=batch_size, action_space_discrete=False, device=device)
+        super().__init__(env, eps=eps, memory_size=memory_size, batch_size=batch_size, max_steps=max_steps, action_space_discrete=False, device=device)
         self.eps = eps
         self.gamma = torch.tensor(0.99).to(device)
-        self.tau = 0.005
+        self.tau = tau
         self.update_every = 1
         self.device = device
 
-        # Build a local and a target agent
+        # Build a local and a target actor network
         self.actor_local = Actor(
             dim_state=len(self.state),
             dim_action=self.brain.vector_action_space_size,
-            hidden_dims=[64,64],
+            hidden_dims=hidden_dims_actor,
         ).to(device)        
         self.actor_target = Actor(
             dim_state=len(self.state),
             dim_action=self.brain.vector_action_space_size,
-            hidden_dims=[64,64],
+            hidden_dims=hidden_dims_actor,
         ).to(device)
 
         # Build a local and a target critic network
         self.critic_local = Critic(
             dim_state=len(self.state),
             dim_action=self.brain.vector_action_space_size,
-            hidden_dims=[64,64],
+            hidden_dims=hidden_dims_critic,
         ).to(device)        
         self.critic_target = Critic(
             dim_state=len(self.state),
             dim_action=self.brain.vector_action_space_size,
-            hidden_dims=[64,64],
+            hidden_dims=hidden_dims_critic,
         ).to(device)
 
         # Copy weights from local actor and local critic to target networks
@@ -68,7 +81,7 @@ class DDPGAgent(SimpleAgent):
             # limit range to interval [min, max]
             action = torch.clamp(action, min=-1, max=1)
             # add random noise to action tensor, this will help the model to stabilize predictions
-            action += 0.01 * torch.randn(*action.shape)
+            #action += 0.005 * torch.randn(*action.shape)
         self.actor_local.train()
         return action.cpu().numpy()
 

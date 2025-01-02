@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 
 class SimpleAgent:
-    def __init__(self, env, eps=1.0, memory_size=int(1e5), batch_size=256, action_space_discrete=True, device="cpu"):
+    def __init__(self, env, eps=1.0, memory_size=int(1e5), batch_size=256, action_space_discrete=True, max_steps=100, device="cpu"):
         """
         Constructor.
         
@@ -12,6 +12,7 @@ class SimpleAgent:
             env: Unity environment
         """
         self.env = env
+        self.max_steps = max_steps
         self.memory = Memory(maxlen=memory_size, action_space_discrete=action_space_discrete, device=device)
         self.batch_size = batch_size
         self.brain_name = self.env.brain_names[0]
@@ -105,7 +106,7 @@ class SimpleAgent:
         Args:
             max_steps (int): Maximum number of steps in one epoch
         """
-        for step in range(max_steps):
+        for step in range(self.max_steps):
             action = self.choose_action()
             state, reward, next_state, done = self.do_step(action=action)
             self.update_memory(state=state, action=action, reward=reward, next_state=next_state, done=done)
