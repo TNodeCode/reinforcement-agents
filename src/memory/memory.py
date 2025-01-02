@@ -6,7 +6,7 @@ from collections import deque
 
 
 class Memory:
-    def __init__(self, maxlen):
+    def __init__(self, maxlen, device="cpu", action_space_discrete=True):
         """
         Initializes the replay buffer.
 
@@ -15,6 +15,9 @@ class Memory:
         """
         self.maxlen = maxlen
         self.buffer = deque(maxlen=maxlen)
+        self.state_dtype = torch.float32
+        self.action_dtype = torch.long if action_space_discrete else torch.float32
+        self.device=device
 
     def append(self, state, action, reward, next_state, done):
         """
@@ -38,11 +41,18 @@ class Memory:
             batch_size: The number of experiences to sample
 
         Returns:
-            A tuple of arrays: (states, actions, rewards, next_states, dones)
+            A tuple of batch tensors: (states, actions, rewards, next_states, dones)
         """
         batch = random.sample(self.buffer, batch_size)
         states, actions, rewards, next_states, dones = zip(*batch)
-        return np.array(states), np.array(actions), np.array(rewards), np.array(next_states), np.array(dones)
+        
+        states = torch.tensor(states, dtype=self.state_dtype, device=self.device)
+        actions = torch.tensor(actions, dtype=self.action_dtype, device=self.device)
+        rewards = torch.tensor(rewards, dtype=torch.float32, device=self.device).unsqueeze(1)
+        next_states = torch.tensor(next_states, dtype=self.state_dtype, device=self.device)
+        dones = torch.tensor(dones, dtype=torch.float32, device=self.device).unsqueeze(1)
+
+        return states, actions, rewards, next_states, dones
 
     def __len__(self):
         """

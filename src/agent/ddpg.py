@@ -6,6 +6,7 @@ import numpy as np
 from src.agent.simple import SimpleAgent
 from src.network.actor import Actor
 from src.network.critic import Critic
+from src.network.utils import NetworkUtils
 
 
 class DDPGAgent(SimpleAgent):
@@ -13,7 +14,7 @@ class DDPGAgent(SimpleAgent):
         """
         Constructor.
         """
-        super().__init__(env, eps=eps, memory_size=memory_size, batch_size=batch_size)
+        super().__init__(env, eps=eps, memory_size=memory_size, batch_size=batch_size, action_space_discrete=False, device=device)
         self.eps = eps
         self.gamma = torch.tensor(0.99).to(device)
         self.tau = 0.005
@@ -81,13 +82,6 @@ class DDPGAgent(SimpleAgent):
         # get a random batch from memory
         states, actions, rewards, next_states, dones = self.memory.sample(batch_size=self.batch_size)
 
-        states = torch.tensor(states, dtype=torch.float32, device=self.device)
-        actions = torch.tensor(actions, dtype=torch.float32, device=self.device)
-        rewards = torch.tensor(rewards, dtype=torch.float32, device=self.device).unsqueeze(1)
-        next_states = torch.tensor(next_states, dtype=torch.float32, device=self.device)
-        dones = torch.tensor(dones, dtype=torch.float32, device=self.device).unsqueeze(1)
-        #print("states", states.shape, "actions", actions.shape, "rewards", rewards.shape, "next_states", next_states.shape, "dones", dones.shape)
-
         ## --- Critic update --- ##
 
         # actor computes action vector based on state
@@ -114,15 +108,5 @@ class DDPGAgent(SimpleAgent):
 
         ## --- Target network updates --- ##
 
-        self.soft_update(self.actor_local, self.actor_target, tau=self.tau)
-        self.soft_update(self.critic_local, self.critic_target, tau=self.tau)
-
-    def soft_update(self, local_model, target_model, tau):
-        """Perform a soft update of the target network with the weights from the local network.
-
-        Args:
-            local_model (nn.Module): Local model
-            target_model (nn.Module): Target model
-        """
-        for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
-            target_param.data.copy_(tau * local_param.data + (1.0 - tau) * target_param.data)
+        NetworkUtils.soft_update(self.actor_local, self.actor_target, tau=self.tau)
+        NetworkUtils.soft_update(self.critic_local, self.critic_target, tau=self.tau)

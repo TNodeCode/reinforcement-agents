@@ -16,6 +16,7 @@ class Trainer:
         self.env = env
         self.agent = agent
         self.scores = []
+        self.avg_epochs_score = 100
 
     def reset(self):
         """
@@ -33,13 +34,14 @@ class Trainer:
             eps_decay: decay factor for epsilon value after each epoch
         """
         eps = eps_start
-        for epoch in tqdm(range(n_epochs)):
+        it = tqdm(range(n_epochs))
+        for epoch in it:
             self.agent.eps = eps
             score = self.agent.play()
-            print("Score", score)
             self.scores.append(score)
             self.agent.reset()
             eps = max(eps_end, eps_decay*eps)
+            it.set_description_str(f"Epoch {epoch} - Avg Score: {sum(self.scores[-self.avg_epochs_score:])/self.avg_epochs_score}")
 
     def plot_scores(self):
         """

@@ -6,14 +6,14 @@ class DeepQNetwork(nn.Module):
     """
     This network maps state information to actions. It is a simple feed-forward neural network.
     """
-    def __init__(self, n_states, n_actions, hidden_dim=64, seed=42):
+    def __init__(self, n_states, n_actions, hidden_dims=[64], activation=nn.LeakyReLU, seed=42):
         """
         Constructor.
         
         Args:
             n_states (int): number of states
             n_actions (int): number of possible actions
-            hidden_dim (int): hidden dimension of neural network
+            hidden_dims (list[int]): hidden dimensions of neural network
             seed (int): Random seed
         """
         super(DeepQNetwork, self).__init__()
@@ -21,11 +21,14 @@ class DeepQNetwork(nn.Module):
         self.seed = torch.manual_seed(seed)
         self.n_states = n_states
         self.n_actions = n_actions
-        self.net = nn.Sequential(
-            nn.Linear(n_states, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, n_actions),
-        )
+        dim_layers = [n_states] + hidden_dims + [n_actions]
+        self.net = nn.Sequential(*[
+            nn.Sequential(
+                nn.Linear(dim_in, dim_out),
+                activation()
+            )
+            for dim_in, dim_out in zip(dim_layers[:-1], dim_layers[1:])
+        ])
         
     def forward(self, x):
         """
