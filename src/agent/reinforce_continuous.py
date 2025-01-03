@@ -41,7 +41,6 @@ class REINFORCEAgentContinuous(SimpleAgent):
         self.update_every = update_every
         self.device = device
         # Build policy network
-        print("state shape", self.state.shape)
         self.policy = ContinuousPolicy(
             dim_state=self.state.shape[1],
             dim_action=self.brain.vector_action_space_size,
@@ -66,7 +65,9 @@ class REINFORCEAgentContinuous(SimpleAgent):
         action = dist.sample()
         # compute log probability of chosen action
         action_log_prob = dist.log_prob(action).sum(dim=-1)
-        return action.numpy().flatten(), action_log_prob
+        action = action.detach().cpu().numpy()
+        action = np.clip(action, a_min=-1, a_max=1)
+        return action, action_log_prob
     
     def learn(self, rewards, log_probs):
         """Computes returns from rewards, normalizes them, and calculates the policy loss.
@@ -97,19 +98,14 @@ class REINFORCEAgentContinuous(SimpleAgent):
     def play(self):
         total_reward = 0
 
-        rewards = []
-        log_probs = []
-
         for _ in range(self.max_steps):
-            action, log_prob = self.choose_action()
-            _, reward, _, done = self.do_step(action=action)
+            actions, log_probs = self.choose_action()
+            _, rewards, _, dones = self.do_step(action=actions)
 
-            rewards.append(reward)
-            log_probs.append(log_prob)
+            step_rewards = sum(rewards)/len(rewards)
+            total_reward += step_rewards
 
-            total_reward += reward
-
-            if done:
+            if any(dones):
                 break
 
         self.learn(rewards, log_probs)

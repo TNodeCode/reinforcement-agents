@@ -6,7 +6,7 @@ class DeepQNetwork(nn.Module):
     """
     This network maps state information to actions. It is a simple feed-forward neural network.
     """
-    def __init__(self, n_states, n_actions, hidden_dims=[64], activation=nn.LeakyReLU, seed=42):
+    def __init__(self, n_states, n_actions, hidden_dims=[64], activation=nn.LeakyReLU, norm=nn.LayerNorm, seed=42):
         """
         Constructor.
         
@@ -25,7 +25,8 @@ class DeepQNetwork(nn.Module):
         self.net = nn.Sequential(*[
             nn.Sequential(
                 nn.Linear(dim_in, dim_out),
-                activation()
+                activation(),
+                norm(dim_out),
             )
             for dim_in, dim_out in zip(dim_layers[:-1], dim_layers[1:])
         ])

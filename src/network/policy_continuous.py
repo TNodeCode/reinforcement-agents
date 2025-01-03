@@ -6,7 +6,7 @@ from typing import List
 class ContinuousPolicy(nn.Module):
     """Policy network that maps a state to an action probability distribution.
     """
-    def __init__(self, dim_state: int, dim_action: int, hidden_dims: List[int] = [64], activation=nn.LeakyReLU):
+    def __init__(self, dim_state: int, dim_action: int, hidden_dims: List[int] = [64], activation=nn.LeakyReLU, norm=nn.LayerNorm):
         """Constructor.
 
         Args:
@@ -21,10 +21,11 @@ class ContinuousPolicy(nn.Module):
         self.net = nn.Sequential(*[
             nn.Sequential(
                 nn.Linear(dim_in, dim_out),
-                activation()
+                activation(),
+                norm(dim_out),
             )
             for dim_in, dim_out in zip(dim_layers[:-1], dim_layers[1:])
-        ], nn.Softmax())
+        ], nn.Softmax(dim=-1))
 
         # Heads
         self.head_mean = nn.Linear(hidden_dims[-1], dim_action)

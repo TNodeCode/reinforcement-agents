@@ -78,12 +78,11 @@ class DDPGAgent(SimpleAgent):
         with torch.no_grad():
             state_tensor = torch.from_numpy(self.state).float().to(self.device)
             action = self.actor_local(state_tensor).squeeze()
-            # limit range to interval [min, max]
-            action = torch.clamp(action, min=-1, max=1)
             # add random noise to action tensor, this will help the model to stabilize predictions
             #action += 0.005 * torch.randn(*action.shape)
         self.actor_local.train()
-        return action.cpu().numpy()
+        action = np.clip(action.cpu().numpy(), min=-1, max=1)
+        return action
 
     def learn(self):
         """

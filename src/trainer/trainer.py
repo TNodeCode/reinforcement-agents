@@ -41,7 +41,7 @@ class Trainer:
             self.scores.append(score)
             self.agent.reset()
             eps = max(eps_end, eps_decay*eps)
-            it.set_description_str(f"Epoch {epoch} - Avg Score: {sum(self.scores[-self.avg_epochs_score:])/self.avg_epochs_score}")
+            it.set_description_str(f"Epoch {epoch+1} - Avg Score: {sum(self.scores[-self.avg_epochs_score:])/self.avg_epochs_score}")
 
     def plot_scores(self):
         """

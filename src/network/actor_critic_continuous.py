@@ -6,7 +6,7 @@ from typing import List
 class ActorCriticNetworkContinuous(nn.Module):
     """Actor-Critic Network.
     """
-    def __init__(self, dim_state, dim_action, hidden_dims=[64]):
+    def __init__(self, dim_state, dim_action, hidden_dims=[64], activation=nn.LeakyReLU, norm=nn.LayerNorm):
         """Constructor.
 
         Args:
@@ -21,7 +21,8 @@ class ActorCriticNetworkContinuous(nn.Module):
         self.net = nn.Sequential(*[
             nn.Sequential(
                 nn.Linear(dim_in, dim_out),
-                nn.LeakyReLU()
+                activation,
+                norm(dim_out),
             )
             for dim_in, dim_out in zip(dim_layers[:-1], dim_layers[1:])
         ])

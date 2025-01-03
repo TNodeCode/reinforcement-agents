@@ -83,15 +83,15 @@ class SimpleAgent:
         # perform action
         self.env_info = self.env.step(action)[self.brain_name]
         # get the next state
-        state, next_state = self.update_state()
+        states, next_states = self.update_state()
         # get reward
-        reward = self.env_info.rewards[0]
+        rewards = self.env_info.rewards
         # update score
-        self.score += reward
+        self.score += sum(rewards) / len(rewards)
         self.score_hist.append(self.score)
         # check if game is over
-        done = self.env_info.local_done[0]
-        return state, reward, next_state, done
+        dones = self.env_info.local_done
+        return states, rewards, next_states, dones
     
     def learn(self):
         """
@@ -99,7 +99,7 @@ class SimpleAgent:
         """
         return # this is a simple agent, it wn't learn anything.
         
-    def play(self, max_steps=100):
+    def play(self):
         """
         Play the game until it is finished.
         
