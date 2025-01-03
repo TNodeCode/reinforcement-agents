@@ -19,7 +19,7 @@ class Memory:
         self.action_dtype = torch.long if action_space_discrete else torch.float32
         self.device=device
 
-    def append(self, state, action, reward, next_state, done):
+    def append(self, states, actions, rewards, next_states, dones):
         """
         Adds a new experience to the buffer.
 
@@ -30,8 +30,9 @@ class Memory:
             next_state: The state after taking the action
             done: A boolean indicating if the episode ended
         """
-        experience = (state, action, reward, next_state, done)
-        self.buffer.append(experience)
+        for i in range(len(states)):
+            experience = (states[i], actions[i], rewards[i], next_states[i], dones[i])
+            self.buffer.append(experience)
 
     def sample(self, batch_size):
         """

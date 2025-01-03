@@ -15,7 +15,7 @@ class DDPGAgent(SimpleAgent):
             env,
             eps=1.0,
             lr_actor=1e-4,
-            lr_critic=1e-3,
+            lr_critic=3e-4,
             hidden_dims_actor=[64,64],
             hidden_dims_critic=[64,64],
             tau=1e-2,
@@ -75,13 +75,12 @@ class DDPGAgent(SimpleAgent):
         """
         # get a continuous representation of the optimal action
         self.actor_local.eval()
-        with torch.no_grad():
-            state_tensor = torch.from_numpy(self.state).float().to(self.device)
-            action = self.actor_local(state_tensor).squeeze()
-            # add random noise to action tensor, this will help the model to stabilize predictions
-            #action += 0.005 * torch.randn(*action.shape)
+        state_tensor = torch.from_numpy(self.state).float().to(self.device)
+        action = self.actor_local(state_tensor)
+        # add random noise to action tensor, this will help the model to stabilize predictions
+        #action += 0.005 * torch.randn(*action.shape)
         self.actor_local.train()
-        action = np.clip(action.cpu().numpy(), min=-1, max=1)
+        action = np.clip(action.detach().cpu().numpy(), -1, 1)
         return action
 
     def learn(self):
@@ -97,10 +96,9 @@ class DDPGAgent(SimpleAgent):
         ## --- Critic update --- ##
 
         # actor computes action vector based on state
-        with torch.no_grad():
-            target_actions = self.actor_target(states=next_states)
-            target_q_values = self.critic_target(states=next_states, actions=target_actions)
-            target_values = rewards + self.gamma * target_q_values * (1 - dones)
+        target_actions = self.actor_target(states=next_states)
+        target_q_values = self.critic_target(states=next_states, actions=target_actions)
+        target_values = rewards + self.gamma * target_q_values * (1 - dones)
 
         # compute difference between expected / target values that local / target critic computed
         critic_values = self.critic_local(states=states, actions=actions)
@@ -120,5 +118,5 @@ class DDPGAgent(SimpleAgent):
 
         ## --- Target network updates --- ##
 
-        NetworkUtils.soft_update(self.actor_local, self.actor_target, tau=self.tau)
-        NetworkUtils.soft_update(self.critic_local, self.critic_target, tau=self.tau)
+        NetworkUtils.soft_update(local_model=self.actor_local, target_model=self.actor_target, tau=self.tau)
+        NetworkUtils.soft_update(local_model=self.critic_local, target_model=self.critic_target, tau=self.tau)

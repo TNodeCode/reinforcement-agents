@@ -14,6 +14,7 @@ class REINFORCEAgentContinuous(SimpleAgent):
             self,
             env,
             eps=1.0,
+            gamma=0.99,
             lr=5e-4,
             hidden_dims=[64],
             memory_size=None,
@@ -35,7 +36,7 @@ class REINFORCEAgentContinuous(SimpleAgent):
             device=device
         )
         self.eps = eps
-        self.gamma = torch.tensor(0.99).to(device)
+        self.gamma = torch.tensor(gamma).to(device)
         self.tau = 1e-3
         self.max_steps = max_steps
         self.update_every = update_every

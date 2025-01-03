@@ -45,23 +45,23 @@ class SimpleAgent:
         self.state = next_state
         return previous_state, next_state
         
-    def update_memory(self, state, action, reward, next_state, done):
+    def update_memory(self, states, actions, rewards, next_states, dones):
         """
         Save step results in memory.
         
         Args:
-            state: state before step was taken
-            action: action that was taken by the step
-            reward: reward that was earned by performing the step
-            next_state: state after step was performed
-            done: indocator whether game was over after step
+            states: states before step was taken
+            actions: actions that was taken by the step
+            rewards: rewards that was earned by performing the step
+            next_states: states after step was performed
+            dones: indocator whether game was over after step
         """
         self.memory.append(
-            state=state,
-            action=action,
-            reward=reward,
-            next_state=next_state,
-            done=done
+            states=states,
+            actions=actions,
+            rewards=rewards,
+            next_states=next_states,
+            dones=dones
         )
     
     def choose_action(self):
@@ -73,7 +73,7 @@ class SimpleAgent:
         """
         return np.random.randint(self.brain.vector_action_space_size)
     
-    def do_step(self, action):
+    def do_step(self, actions):
         """
         Perform a step based on a chosen action.
         
@@ -81,7 +81,7 @@ class SimpleAgent:
             action (int): The action that was chosen
         """
         # perform action
-        self.env_info = self.env.step(action)[self.brain_name]
+        self.env_info = self.env.step(actions)[self.brain_name]
         # get the next state
         states, next_states = self.update_state()
         # get reward
@@ -107,12 +107,12 @@ class SimpleAgent:
             max_steps (int): Maximum number of steps in one epoch
         """
         for step in range(self.max_steps):
-            action = self.choose_action()
-            state, reward, next_state, done = self.do_step(action=action)
-            if self.memory:
-                self.update_memory(state=state, action=action, reward=reward, next_state=next_state, done=done)
+            actions = self.choose_action()
+            states, rewards, next_states, dones = self.do_step(actions=actions)
+            if self.memory is not None:
+                self.update_memory(states=states, actions=actions, rewards=rewards, next_states=next_states, dones=dones)
             self.learn()
-            if done:
+            if all(dones):
                 break
         return self.score
     
