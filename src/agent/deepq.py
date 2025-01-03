@@ -40,13 +40,13 @@ class DeepQAgent(SimpleAgent):
         self.device = device
         # Build two Deep-Q-Networks 
         self.local_q_network = DeepQNetwork(
-            n_states=len(self.state),
+            dim_state=self.state.shape[1],
             n_actions=self.brain.vector_action_space_size,
             hidden_dims=hidden_dims,
             activation=activation,
         ).to(device)        
         self.target_q_network = DeepQNetwork(
-            n_states=len(self.state),
+            dim_state=self.state.shape[1],
             n_actions=self.brain.vector_action_space_size,
             hidden_dims=hidden_dims,
             activation=activation,
@@ -63,7 +63,6 @@ class DeepQAgent(SimpleAgent):
         with torch.no_grad():
             # compute scores for each action
             state_tensor = torch.from_numpy(self.state).float()
-            state_tensor = state_tensor.unsqueeze(0)
             state_tensor = state_tensor.to(self.device)
             action_scores = self.local_q_network(state_tensor)
             # get index of best action

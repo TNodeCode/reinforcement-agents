@@ -36,24 +36,24 @@ class DDPGAgent(SimpleAgent):
 
         # Build a local and a target actor network
         self.actor_local = Actor(
-            dim_state=len(self.state),
+            dim_state=self.state.shape[1],
             dim_action=self.brain.vector_action_space_size,
             hidden_dims=hidden_dims_actor,
         ).to(device)        
         self.actor_target = Actor(
-            dim_state=len(self.state),
+            dim_state=self.state.shape[1],
             dim_action=self.brain.vector_action_space_size,
             hidden_dims=hidden_dims_actor,
         ).to(device)
 
         # Build a local and a target critic network
         self.critic_local = Critic(
-            dim_state=len(self.state),
+            dim_state=self.state.shape[1],
             dim_action=self.brain.vector_action_space_size,
             hidden_dims=hidden_dims_critic,
         ).to(device)        
         self.critic_target = Critic(
-            dim_state=len(self.state),
+            dim_state=self.state.shape[1],
             dim_action=self.brain.vector_action_space_size,
             hidden_dims=hidden_dims_critic,
         ).to(device)
@@ -76,7 +76,7 @@ class DDPGAgent(SimpleAgent):
         # get a continuous representation of the optimal action
         self.actor_local.eval()
         with torch.no_grad():
-            state_tensor = torch.from_numpy(self.state).float().unsqueeze(0).to(self.device)
+            state_tensor = torch.from_numpy(self.state).float().to(self.device)
             action = self.actor_local(state_tensor).squeeze()
             # limit range to interval [min, max]
             action = torch.clamp(action, min=-1, max=1)

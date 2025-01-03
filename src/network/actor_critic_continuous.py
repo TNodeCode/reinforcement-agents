@@ -16,6 +16,8 @@ class ActorCriticNetworkContinuous(nn.Module):
         """
         super(ActorCriticNetworkContinuous, self).__init__()
         dim_layers = [dim_state] + hidden_dims
+
+        # Feature extraction
         self.net = nn.Sequential(*[
             nn.Sequential(
                 nn.Linear(dim_in, dim_out),
@@ -24,7 +26,7 @@ class ActorCriticNetworkContinuous(nn.Module):
             for dim_in, dim_out in zip(dim_layers[:-1], dim_layers[1:])
         ])
         
-        # Actor head
+        # Actor heads
         self.actor_mean = nn.Linear(hidden_dims[-1], dim_action)
         self.actor_log_std = nn.Linear(hidden_dims[-1], dim_action)
         
@@ -38,7 +40,7 @@ class ActorCriticNetworkContinuous(nn.Module):
             state (torch.tensor): state
 
         Returns:
-            (torch.tensor, torch.tensor): action probabilities and state values
+            (torch.tensor, torch.tensor, torch.tensor): action means and stds and state values
         """
         # compute shared features
         features = self.net(state)
@@ -47,7 +49,6 @@ class ActorCriticNetworkContinuous(nn.Module):
         mean = self.actor_mean(features)
         std = torch.exp(self.actor_log_std(features))
 
-        
         # Critic: outputs state value
         state_value = self.critic(features)
         

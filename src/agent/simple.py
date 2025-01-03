@@ -13,7 +13,7 @@ class SimpleAgent:
         """
         self.env = env
         self.max_steps = max_steps
-        self.memory = Memory(maxlen=memory_size, action_space_discrete=action_space_discrete, device=device)
+        self.memory = Memory(maxlen=memory_size, action_space_discrete=action_space_discrete, device=device) if memory_size else None
         self.batch_size = batch_size
         self.brain_name = self.env.brain_names[0]
         self.brain = self.env.brains[self.brain_name]
@@ -41,7 +41,7 @@ class SimpleAgent:
             (int, int): tuple containing state before and after update
         """
         previous_state = self.state
-        next_state = self.env_info.vector_observations[0]
+        next_state = self.env_info.vector_observations
         self.state = next_state
         return previous_state, next_state
         
@@ -109,7 +109,8 @@ class SimpleAgent:
         for step in range(self.max_steps):
             action = self.choose_action()
             state, reward, next_state, done = self.do_step(action=action)
-            self.update_memory(state=state, action=action, reward=reward, next_state=next_state, done=done)
+            if self.memory:
+                self.update_memory(state=state, action=action, reward=reward, next_state=next_state, done=done)
             self.learn()
             if done:
                 break

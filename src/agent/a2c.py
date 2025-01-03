@@ -15,7 +15,7 @@ class A2CAgent(SimpleAgent):
         
         # Initialize actor-critic network
         self.ac_network = ActorCriticNetworkContinuous(
-            dim_state=len(self.state),
+            dim_state=self.state.shape[1],
             dim_action=self.brain.vector_action_space_size
         )
         
@@ -23,20 +23,12 @@ class A2CAgent(SimpleAgent):
         self.optimizer = torch.optim.Adam(self.ac_network.parameters(), lr=lr)
 
     def choose_action(self):
-        state = torch.from_numpy(self.state).float().unsqueeze(0).to(self.device)
+        state = torch.from_numpy(self.state).float().to(self.device)
         mean, std, _ = self.ac_network(state)
         dist = torch.distributions.Normal(mean, std)
         action = dist.sample()
         action_log_prob = dist.log_prob(action).sum(dim=-1)
         return action.squeeze().numpy(), action_log_prob
-
-    def choose_action_discrete(self):
-        state = torch.from_numpy(self.state).float().unsqueeze(0).to(self.device)
-        #state = torch.tensor(state, dtype=torch.float32).unsqueeze(0)
-        action_probs, _ = self.ac_network(state)
-        action_dist = torch.distributions.Categorical(action_probs)
-        action = action_dist.sample()
-        return action.item(), action_dist.log_prob(action)
 
     def learn(self, rewards, log_probs, state_values, dones):
         # Compute returns
